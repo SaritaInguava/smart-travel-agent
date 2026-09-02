@@ -1,5 +1,0 @@
-python-dotenv
-
-[dev]
-pytest
-ruff
