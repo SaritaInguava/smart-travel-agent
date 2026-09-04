@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class TravelPlanState(BaseModel):
+    origin: str
     destination: str
     num_days: int
     budget: float
