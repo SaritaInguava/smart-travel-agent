@@ -9,7 +9,11 @@ from smart_travel_agent.config import get_expedia_rapidapi_key
 EXPEDIA_RAPIDAPI_HOST = "expedia-api-expedia-data-scraper.p.rapidapi.com"
 
 MAX_STOPS = 1
-MAX_RETRIES = 3
+# One retry (2 attempts total), not 3 — the RapidAPI gateway in front of Expedia takes
+# ~60s+ to itself time out on a bad request, so each extra attempt is a long wait for a
+# failure that's rarely transient in practice; better to fail fast into the graceful
+# degradation in agents.py's tickets_scouter than sit through a 3+ minute retry loop.
+MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 2
 
 
