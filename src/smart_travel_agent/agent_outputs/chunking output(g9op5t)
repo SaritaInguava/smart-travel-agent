@@ -1,0 +1,29 @@
+  from langchain_community.document_loaders import DirectoryLoader
+Embedded 26 chunk(s) into 1536-dimensional vectors.
+  [Stratford] 2340 chars
+  [Harker Upper School] 422 chars
+  [Harker Upper School] 257 chars
+  [Harker Upper School] 111 chars
+  [Harker Upper School] 342 chars
+  [Harker Upper School] 111 chars
+  [Harker Upper School] 114 chars
+  [Harker Upper School] 119 chars
+  [Harker Upper School] 112 chars
+  [Harker Upper School] 119 chars
+  [Harker Upper School] 276 chars
+  [Harker Upper School] 138 chars
+  [Harker Upper School] 186 chars
+  [Harker Upper School] 151 chars
+  [Harker Upper School] 114 chars
+  [Harker Upper School] 177 chars
+  [Harker Upper School] 181 chars
+  [Harker Upper School] 121 chars
+  [Harker Upper School] 128 chars
+  [Harker Upper School] 115 chars
+  [Harker Upper School] 194 chars
+  [Harker Upper School] 114 chars
+  [Harker Upper School] 104 chars
+  [Harker Upper School] 114 chars
+  [Harker Upper School] 189 chars
+  [Harker Upper School] 114 chars
+Saved FAISS index to /Users/singuava/repos/capstone/smart-travel-agent/src/smart_travel_agent/retrieval/faiss_index
