@@ -59,3 +59,18 @@ URL in your browser to plan a trip and refine it with follow-up requests.
 ```bash
 uv run pytest
 ```
+
+These are fast, free unit tests — the LLM is mocked throughout, so they check the
+surrounding logic (prompts built correctly, dirty-node tracking, output formatting) but
+not actual model/retrieval quality.
+
+## Running evals
+
+```bash
+uv run python -m evals.eval_retrieval
+```
+
+Evals live separately from `tests/` and are not run by `pytest` — they make real calls
+(here, real OpenAI embedding calls against the FAISS index built above) rather than
+mocking the LLM, so they're slower and cost real API usage, but they catch regressions
+in actual output/retrieval quality that mocked unit tests can't.
