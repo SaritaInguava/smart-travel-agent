@@ -1,0 +1,14 @@
+eval exit: 1
+110:[FAIL] 6-day itinerary is coherent and non-redundant
+111:       coherence_score=3/5 (pass threshold: 4)
+112:       verified repeated items: []
+113:       judge also claimed (but couldn't verify, so ignored): [('Sushi Zanmai', [5])]
+114:       generic_filler_examples=['Enjoy a leisurely stroll through the park.', "Explore the vibrant nightlife in Kabukicho, Tokyo's entertainment district.", 'Stroll through Omotesando and enjoy the architectural beauty of the area.', 'Visit a local eatery (try Yuba in Nikko or Shirasu-don in Kamakura).', 'Relax at your hotel or enjoy a quiet evening walk around Shinjuku.', 'Reflecting on a wonderful trip filled with food, culture, and history.']
+115:       judge's reasoning: The itinerary has a repeated restaurant (Sushi Zanmai on Day 5) and several vague statements that could apply to any city, which detracts from its specificity and distinctiveness. Overall, while there are many specific activities, the presence of generic filler and a repeat lowers the coherence score.
+---
+src/smart_travel_agent/retrieval/retriever.py:4
+  /Users/singuava/repos/capstone/smart-travel-agent/src/smart_travel_agent/retrieval/retriever.py:4: DeprecationWarning: `langchain-community` is being sunset and is no longer actively maintained. See https://github.com/langchain-ai/langchain-community/issues/674 for details and migration guidance toward standalone integration packages.
+    from langchain_community.vectorstores import FAISS
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+18 passed, 1 warning in 2.61s
