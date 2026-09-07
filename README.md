@@ -68,9 +68,14 @@ not actual model/retrieval quality.
 
 ```bash
 uv run python -m evals.eval_retrieval
+uv run python -m evals.eval_agent_outputs
 ```
 
 Evals live separately from `tests/` and are not run by `pytest` — they make real calls
-(here, real OpenAI embedding calls against the FAISS index built above) rather than
-mocking the LLM, so they're slower and cost real API usage, but they catch regressions
-in actual output/retrieval quality that mocked unit tests can't.
+(the first makes real OpenAI embedding calls against the FAISS index built above; the
+second runs the actual agent functions against a real OpenAI model, not a mocked one)
+rather than mocking the LLM, so they're slower and cost real API usage, but they catch
+regressions in actual output/retrieval quality that mocked unit tests can't — things
+like constraint satisfaction (does the itinerary cover every requested day?), format
+adherence (morning/afternoon/evening structure), interest coverage, and whether an
+agent duplicates another agent's responsibilities.
