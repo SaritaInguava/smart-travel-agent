@@ -15,7 +15,10 @@ def _require_api_key() -> None:
 
 def get_llm(temperature: float = 0.4, model: str = DEFAULT_MODEL) -> ChatOpenAI:
     _require_api_key()
-    return ChatOpenAI(model=model, temperature=temperature)
+    # Explicit retry count (rather than relying on the SDK's ambiguous default) — the agents
+    # in this app share one TPM bucket per model, so a brief near-ceiling 429 is expected under
+    # load; OpenAI's own backoff hint on these is typically well under a second.
+    return ChatOpenAI(model=model, temperature=temperature, max_retries=5)
 
 
 def get_embeddings() -> OpenAIEmbeddings:
