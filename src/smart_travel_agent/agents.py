@@ -222,7 +222,15 @@ def activity_planner(state: TravelPlanState) -> dict:
         "travel dates (e.g. avoid outdoor-heavy days if it's a rainy/cold season). Make it "
         "achievable and enjoyable. Use the budget only to keep suggestions appropriately "
         "priced — do not include a budget breakdown, cost estimates, or a 'Budget Overview' "
-        "section; a separate budget analyst handles that."
+        "section; a separate budget analyst handles that.\n\n"
+        "Every activity, meal, and evening slot must name a specific place — a real "
+        "restaurant, attraction, neighborhood, or landmark — or a concrete action. Never "
+        "write a vague, could-apply-to-any-city line with nothing named, like 'enjoy a "
+        "leisurely stroll' or 'relax at your hotel.' If a slot is genuinely meant as rest "
+        "or free time, still name a specific nearby spot for it (a particular park, café, "
+        "or neighborhood) rather than leaving it generic. Do not end with a generic closing "
+        "remark about the trip as a whole (e.g. 'reflecting on a wonderful trip filled "
+        "with...'); end on the last day's last concrete activity instead."
     )
     content, trace = _run_agent(PLANNER_SYSTEM_PROMPT, prompt)
     return {"itinerary": content, "trace": _tag(trace, "activity_planner")}
