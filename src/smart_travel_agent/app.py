@@ -98,6 +98,7 @@ _ROLE_LABELS = {
     "tool": "🔧 Tool result",
     "timing": "⏱️ Timing",
     "error": "❌ Error",
+    "guardrail": "🛡️ Guardrail",
 }
 
 
@@ -217,8 +218,12 @@ def plan_trip(
     preferred_break,
     ticket_preferences,
     user_name,
-    thread_id,
 ):
+    # A fresh "Plan my trip" always starts a brand-new, isolated thread — never reuses
+    # whatever thread this tab has been using, so an unrelated destination doesn't inherit
+    # another trip's accumulated trace/checkpoint history. Follow-ups are what continue an
+    # existing thread (see send_followup, which takes thread_id as an input instead).
+    thread_id = str(uuid.uuid4())
     print(f"[DEBUG] plan_trip thread_id={thread_id!r}")
     start_time = time.perf_counter()
     state = TravelPlanState(
@@ -253,6 +258,7 @@ def plan_trip(
             render_tools(trace),
             render_trace(trace),
             history,
+            thread_id,
         )
 
     yield emit(_render_status(statuses))
@@ -289,6 +295,7 @@ def send_followup(message, user_name, thread_id, history):
             render_tools(trace),
             render_trace(trace),
             history,
+            gr.skip(),  # a follow-up continues the existing thread — never changes thread_id.
         )
 
     if not message or not message.strip():
@@ -452,6 +459,7 @@ def build_ui() -> gr.Blocks:
             tools_display,
             trace_display,
             history_state,
+            thread_id,
         ]
 
         submit.click(
@@ -466,7 +474,6 @@ def build_ui() -> gr.Blocks:
                 preferred_break,
                 ticket_preferences,
                 user_name,
-                thread_id,
             ],
             outputs=all_outputs,
         )
