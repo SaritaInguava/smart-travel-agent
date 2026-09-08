@@ -6,6 +6,19 @@ flights via Expedia, builds a day-by-day itinerary, and produces a budget breakd
 with a Gradio UI for running and refining a plan through follow-up requests, and
 long-term memory of each traveler's preferences across sessions.
 
+## Architecture
+
+![LangGraph agent graph](docs/graph.png)
+
+`destination_researcher` and `calendar_keeper` run in parallel off the start; `activity_planner`
+waits on both. `tickets_scouter` follows `calendar_keeper` alone, since it needs the resolved
+date range. `budget_analyst` joins `activity_planner` and `tickets_scouter` before finishing.
+Regenerate this diagram after changing the graph's wiring in `graph.py`:
+
+```bash
+uv run python -c "from smart_travel_agent.graph import build_graph; open('docs/graph.png', 'wb').write(build_graph().get_graph().draw_mermaid_png())"
+```
+
 ## Prerequisites
 
 - Python 3.11+
