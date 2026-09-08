@@ -12,6 +12,11 @@ class TravelPlanState(BaseModel):
     passengers: int = 1
     interests: str = ""
     preferred_break: str | None = None
+    # Freeform flight-specific asks for tickets_scouter — round-trip vs one-way, nonstop
+    # only, a preferred airline, refundable fare, etc. Kept freeform rather than a narrow
+    # field like is_roundtrip: bool so it covers whatever specific preference comes up
+    # next, not just this one.
+    ticket_preferences: str = ""
     user_name: str | None = None
 
     destination_brief: str | None = None

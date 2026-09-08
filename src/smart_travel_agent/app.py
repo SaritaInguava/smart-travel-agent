@@ -136,7 +136,7 @@ _NODE_DEPENDS_ON = {
     # calendar_keeper's set) so a follow-up that overrides date_range directly (see
     # _FollowUpUpdate) marks these two dirty WITHOUT marking calendar_keeper dirty, i.e. the
     # explicit date is trusted as-is rather than triggering a fresh calendar lookup.
-    "tickets_scouter": {"origin", "destination", "passengers", "budget", "date_range"},
+    "tickets_scouter": {"origin", "destination", "passengers", "budget", "date_range", "ticket_preferences"},
     "activity_planner": {"destination", "num_days", "budget", "interests", "date_range"},
     "budget_analyst": {"budget", "passengers", "num_days", "destination"},
 }
@@ -167,6 +167,7 @@ class _FollowUpUpdate(BaseModel):
     interests: str | None = None
     preferred_break: str | None = None
     date_range: str | None = None
+    ticket_preferences: str | None = None
 
 
 _FOLLOWUP_SYSTEM_PROMPT = (
@@ -180,7 +181,12 @@ _FOLLOWUP_SYSTEM_PROMPT = (
     "current trip details if not stated) — this is an explicit override that skips a fresh "
     "school-calendar lookup, which is exactly what's wanted when the user already named the "
     "dates. Also set num_days to match the number of days spanned, unless the user separately "
-    "states a different day count."
+    "states a different day count.\n\n"
+    "If the message asks for a flight-specific preference that isn't one of the other fields "
+    "(round-trip vs one-way, nonstop only, a preferred airline, refundable fare, etc.), put it "
+    "in ticket_preferences as a short freeform note. Append to, don't discard, any preference "
+    "already reflected in the current trip details if the new one is additional rather than a "
+    "replacement."
 )
 
 
@@ -201,7 +207,19 @@ def _parse_followup(message: str, current_state: dict) -> dict:
     return {k: v for k, v in update.items() if current_state.get(k) != v}
 
 
-def plan_trip(origin, destination, num_days, budget, passengers, interests, preferred_break, user_name, thread_id):
+def plan_trip(
+    origin,
+    destination,
+    num_days,
+    budget,
+    passengers,
+    interests,
+    preferred_break,
+    ticket_preferences,
+    user_name,
+    thread_id,
+):
+    print(f"[DEBUG] plan_trip thread_id={thread_id!r}")
     start_time = time.perf_counter()
     state = TravelPlanState(
         origin=origin,
@@ -211,13 +229,17 @@ def plan_trip(origin, destination, num_days, budget, passengers, interests, pref
         passengers=int(passengers),
         interests=interests or "",
         preferred_break=preferred_break or None,
+        ticket_preferences=ticket_preferences or "",
         user_name=user_name or None,
     )
     config = {"configurable": {"thread_id": thread_id}}
 
     outputs = dict.fromkeys(_NODE_LABELS, "")
     statuses = dict.fromkeys(_NODE_LABELS.values(), False)
-    history = [{"role": "user", "content": f"Plan a {num_days}-day trip to {destination} from {origin}."}]
+    break_note = f" during {preferred_break}" if preferred_break else ""
+    history = [
+        {"role": "user", "content": f"Plan a {num_days}-day trip to {destination} from {origin}{break_note}."}
+    ]
 
     def emit(status_text: str) -> tuple:
         trace = _GRAPH.get_state(config).values.get("trace", [])
@@ -251,6 +273,7 @@ def plan_trip(origin, destination, num_days, budget, passengers, interests, pref
 
 
 def send_followup(message, user_name, thread_id, history):
+    print(f"[DEBUG] send_followup thread_id={thread_id!r}")
     start_time = time.perf_counter()
     history = history or []
     empty_outputs = dict.fromkeys(_NODE_LABELS, "")
@@ -329,6 +352,30 @@ def send_followup(message, user_name, thread_id, history):
     yield emit(_render_status(statuses), outputs, gr.skip(), final_state.get("trace", []))
 
 
+_CUSTOM_CSS = """
+.scrollable-panel {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid var(--border-color-primary);
+    border-radius: 8px;
+    padding: 12px;
+}
+.compact-form.column {
+    gap: 6px !important;
+}
+.compact-form .form {
+    gap: 4px !important;
+}
+.compact-form .block {
+    padding-bottom: 2px !important;
+}
+.compact-form label span {
+    margin-bottom: 2px !important;
+    font-size: 0.85rem !important;
+}
+"""
+
+
 def build_ui() -> gr.Blocks:
     with gr.Blocks(title="Smart Travel Agent") as demo:
         thread_id = gr.State(lambda: str(uuid.uuid4()))
@@ -341,7 +388,7 @@ def build_ui() -> gr.Blocks:
         )
 
         with gr.Row():
-            with gr.Column(scale=1):
+            with gr.Column(scale=1, elem_classes=["compact-form"]):
                 user_name = gr.Textbox(
                     label="Your name", placeholder="e.g. Sarita — used to remember your preferences"
                 )
@@ -353,6 +400,9 @@ def build_ui() -> gr.Blocks:
                 interests = gr.Textbox(label="Interests (optional)", placeholder="food, culture, history")
                 preferred_break = gr.Textbox(
                     label="Preferred school break (optional)", placeholder="e.g. Thanksgiving break"
+                )
+                ticket_preferences = gr.Textbox(
+                    label="Ticket preferences (optional)", placeholder="e.g. round-trip, nonstop only"
                 )
                 submit = gr.Button("Plan my trip", variant="primary")
                 status = gr.Textbox(label="Progress", interactive=False)
@@ -387,7 +437,7 @@ def build_ui() -> gr.Blocks:
                         tools_display = gr.Markdown(render_tools([]))
 
                     with gr.Tab("Trace"):
-                        trace_display = gr.Markdown(render_trace([]))
+                        trace_display = gr.Markdown(render_trace([]), elem_classes=["scrollable-panel"])
 
         all_outputs = [
             status,
@@ -414,6 +464,7 @@ def build_ui() -> gr.Blocks:
                 passengers,
                 interests,
                 preferred_break,
+                ticket_preferences,
                 user_name,
                 thread_id,
             ],
@@ -428,4 +479,4 @@ def build_ui() -> gr.Blocks:
 
 
 if __name__ == "__main__":
-    build_ui().launch()
+    build_ui().launch(css=_CUSTOM_CSS)

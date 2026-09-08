@@ -171,16 +171,32 @@ def calendar_keeper(state: TravelPlanState) -> dict:
 TICKETS_SYSTEM_PROMPT = (
     "You are a flight ticket scouter. Use the available Expedia tools to search for flights "
     "for the given number of passengers within budget, preferring options with fewer "
-    "layovers/hops. Report the best options you find, including price and number of stops."
+    "layovers/hops.\n\n"
+    "IMPORTANT — searchFlights only ever returns ONE direction's listings per call (its "
+    "'departing flights' section), even when you pass return_date. It does not return a "
+    "bundled round-trip fare in one call. So for a round trip (the default for a vacation "
+    "with a return date, unless the preferences explicitly say one-way), call searchFlights "
+    "TWICE: once origin -> destination on the departure date, and once destination -> origin "
+    "on the return date — omit return_date on both calls, since each call is really a one-way "
+    "search for one leg. For an explicit one-way request, call it once.\n\n"
+    "Report the top 3 options for EACH direction separately, clearly labeled Outbound and "
+    "Return, each with price and number of stops. For a round trip, also state a combined "
+    "total (cheapest outbound + cheapest return) — but label it clearly as an outbound+return "
+    "estimate, not a bundled round-trip fare, since summing two one-way prices is usually "
+    "more expensive than an airline's actual round-trip ticket. Never say 'roundtrip options' "
+    "or otherwise imply a bundled fare was found — only these two separate one-way searches "
+    "actually happened."
 )
 
 
 async def _scout_tickets(state: TravelPlanState) -> tuple[str, list[dict]]:
     tools = await get_expedia_tools()
+    preferences_line = f" Additional preferences: {state.ticket_preferences}." if state.ticket_preferences else ""
     prompt = (
         f"Find flight tickets from {state.origin} to {state.destination} for "
         f"{state.passengers} passenger(s), during {state.date_range or 'dates to be determined'}, "
         f"within a total budget of ${state.budget}. Prefer options with fewer hops/layovers."
+        f"{preferences_line}"
     )
     return await _arun_agent(TICKETS_SYSTEM_PROMPT, prompt, tools=tools, model="gpt-5.4")
 
