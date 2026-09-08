@@ -5,6 +5,7 @@ from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 
 from smart_travel_agent.config import get_llm
+from smart_travel_agent.guardrails import check_confidence_calibration
 from smart_travel_agent.mcp_tools import get_expedia_tools
 from smart_travel_agent.memory import get_memories
 from smart_travel_agent.retrieval.retriever import search_school_calendar
@@ -142,6 +143,21 @@ def destination_researcher(state: TravelPlanState) -> dict:
         "handles all of that."
     )
     content, trace = _run_agent(RESEARCHER_SYSTEM_PROMPT, prompt)
+
+    check = check_confidence_calibration(content)
+    if check["flagged_phrases"]:
+        hedged_summary = ", ".join(f"'{m}' -> '{a}'" for m, _, a in check["flagged_phrases"])
+        trace.append(
+            {
+                "role": "guardrail",
+                "content": (
+                    f"Overconfidence check: {check['verdict']} "
+                    f"(score={check['overconfidence_score']}) — hedged: {hedged_summary}"
+                ),
+            }
+        )
+    content = check["hedged_text"]
+
     return {"destination_brief": content, "trace": _tag(trace, "destination_researcher")}
 
 
@@ -185,7 +201,12 @@ TICKETS_SYSTEM_PROMPT = (
     "estimate, not a bundled round-trip fare, since summing two one-way prices is usually "
     "more expensive than an airline's actual round-trip ticket. Never say 'roundtrip options' "
     "or otherwise imply a bundled fare was found — only these two separate one-way searches "
-    "actually happened."
+    "actually happened.\n\n"
+    "Formatting: use a level-3 heading (###) for each direction, e.g. '### Outbound — SFO -> "
+    "HNL' — never a bigger heading. Within each numbered option, bold only the airline name "
+    "and the price; leave stops, duration, and departure/arrival times in plain text. Use this "
+    "same style consistently for every option and every section — don't vary which words are "
+    "bolded or which heading level is used from one line to the next."
 )
 
 

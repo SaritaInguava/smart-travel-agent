@@ -56,6 +56,20 @@ def test_destination_researcher_returns_brief():
     }
 
 
+def test_destination_researcher_hedges_overconfident_claims():
+    overconfident = "This neighborhood is completely safe. It is guaranteed you'll have a great trip."
+    with patch("smart_travel_agent.agents.create_agent", return_value=_fake_agent(overconfident)):
+        result = destination_researcher(BASE_STATE)
+
+    assert "completely safe" not in result["destination_brief"].lower()
+    assert "guaranteed" not in result["destination_brief"].lower()
+    assert result["trace"][0]["role"] == "ai"
+    guardrail_entries = [e for e in result["trace"] if e["role"] == "guardrail"]
+    assert len(guardrail_entries) == 1
+    assert guardrail_entries[0]["agent"] == "destination_researcher"
+    assert "FAIL" in guardrail_entries[0]["content"] or "WARN" in guardrail_entries[0]["content"]
+
+
 def test_calendar_keeper_returns_date_range():
     with patch(
         "smart_travel_agent.agents.create_agent",
