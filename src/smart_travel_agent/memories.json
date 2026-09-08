@@ -7,14 +7,22 @@
   ],
   "Sarita": [
     "Usually travels from San Francisco, CA.",
-    "Typically budgets $15,000 for a family of 5.",
-    "Interested in history when traveling.",
-    "Prefers to travel during winter break."
+    "Typically budgets $10,000 for a family of 5.",
+    "Interested in beach destinations when traveling.",
+    "Prefers nonstop flights over options with layovers.",
+    "Prefers to travel during Thanksgiving break."
   ],
   "Tom": [
     "Usually travels from San Francisco, CA.",
     "Typically budgets $10,000 for a family of 4.",
     "Interested in history when traveling.",
     "Prefers to travel during school holidays."
+  ],
+  "sarita": [
+    "Usually travels from San Francisco, CA.",
+    "Typically budgets $10,000 for a family of 5.",
+    "Prefers nonstop flights over cheaper layover options.",
+    "Interested in beach destinations when traveling.",
+    "Prefers to travel during Thanksgiving break."
   ]
 }
