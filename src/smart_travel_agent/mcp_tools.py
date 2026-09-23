@@ -16,6 +16,17 @@ MAX_STOPS = 1
 MAX_RETRIES = 2
 RETRY_BACKOFF_SECONDS = 2
 
+# The Expedia MCP server exposes 14 tools total (flights, hotels, cars, activities,
+# location lookup, health) — tickets_scouter only ever uses searchFlights. Every tool
+# returned here gets its full name/description/args schema loaded into the agent's
+# context on each call, so everything but flight search/booking is excluded rather
+# than left for the model to ignore. Confirmed against a live tools/list call that the
+# server has no booking tool today — add its name here once one exists.
+_ALLOWED_TOOL_NAMES = {
+    "searchFlights",
+    "bookFlights",
+}
+
 
 def _expedia_mcp_config() -> dict:
     return {
@@ -123,6 +134,7 @@ def _wrap_with_retry(tool):
 async def get_expedia_tools() -> list:
     client = MultiServerMCPClient(_expedia_mcp_config())
     tools = await client.get_tools()
+    tools = [tool for tool in tools if tool.name in _ALLOWED_TOOL_NAMES]
     for tool in tools:
         if tool.name == "searchFlights":
             _wrap_search_flights(tool)
