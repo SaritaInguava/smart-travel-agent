@@ -6,6 +6,8 @@ flights via Expedia, builds a day-by-day itinerary, and produces a budget breakd
 with a Gradio UI for running and refining a plan through follow-up requests, and
 long-term memory of each traveler's preferences across sessions.
 
+Video: https://www.loom.com/share/fe027c7feb5b4af98f97bcfda341d323
+
 ## Architecture
 
 ![LangGraph agent graph](docs/graph.png)
